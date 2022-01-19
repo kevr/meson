@@ -12,12 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import shlex
+
 from mesonbuild import environment, mesonlib
 
 import argparse, re, sys, os, subprocess, pathlib, stat
 import typing as T
 
 def coverage(outputs: T.List[str], source_root: str, subproject_root: str, build_root: str, log_dir: str, use_llvm_cov: bool) -> int:
+    extra_gcov_args = shlex.escape(os.environ.get("GCOV_ARGS", str()))
+
     outfiles = []
     exitcode = 0
 
@@ -63,7 +68,7 @@ def coverage(outputs: T.List[str], source_root: str, subproject_root: str, build
             subprocess.check_call(gcovr_base_cmd +
                                   ['-e', re.escape(subproject_root),
                                    '-o', os.path.join(log_dir, 'coverage.txt')
-                                   ] + gcov_exe_args)
+                                   ] + gcov_exe_args + extra_gcov_args)
             outfiles.append(('Text', pathlib.Path(log_dir, 'coverage.txt')))
         elif outputs:
             print('gcovr >= 3.3 needed to generate text coverage report')
